@@ -10,13 +10,14 @@ import time
 init()
 
 text = "Yay! Spammer"
-font = "slant"  
+font = "slant"
 
 ascii_art = pyfiglet.figlet_format(text, font=font)
 
 print(Fore.MAGENTA + ascii_art + Fore.RESET)
 
-async def fetch_group_members(session, group_id, token):
+async def fetch_group_members(session, group_id, tokens):
+    token = random.choice(tokens)  
     url = f"https://api.yay.space/v2/groups/{group_id}/members"
     headers = {"Authorization": f"Bearer {token}"}
     async with session.get(url, headers=headers) as response:
@@ -24,7 +25,8 @@ async def fetch_group_members(session, group_id, token):
         data = await response.json()
         return [{"id": member["user"]["id"], "nickname": member["user"]["nickname"]} for member in data["group_users"]]
 
-async def send_message(session, group_id, member, base_message, token):
+async def send_message(session, group_id, member, base_message, tokens):
+    token = random.choice(tokens)  
     url = "https://yay.space/api/posts"
     headers = {"Authorization": f"Bearer {token}"}
     text = f"@{member['nickname']} {base_message}" if member else base_message
@@ -49,16 +51,15 @@ async def main():
     group_id = input("グループIDを入力してください: ")
     base_message = input("メッセージを入力してください: ")
     num_messages = int(input("送信するメッセージ数を入力してください: "))
-    mention_random_member = input("ランダムメンションをしますか? (y/n): ").lower() == 'y'
+    mention_random_member = input("ランダムにメンションしますか? (y/n): ").lower() == 'y'
 
     with open("token.txt", "r") as file:
         tokens = [line.strip() for line in file.readlines() if line.strip()]
     
     async with aiohttp.ClientSession() as session:
-        token = tokens[0]  
-        members = await fetch_group_members(session, group_id, token)
+        members = await fetch_group_members(session, group_id, tokens)
         for _ in range(num_messages):
             member = random.choice(members) if mention_random_member and members else None
-            await send_message(session, group_id, member, base_message, token)
+            await send_message(session, group_id, member, base_message, tokens)
 
 asyncio.run(main())
