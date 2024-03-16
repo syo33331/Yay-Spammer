@@ -18,7 +18,7 @@ print(Fore.MAGENTA + ascii_art + Fore.RESET)
 
 async def fetch_group_members(session, group_id, tokens):
     token = random.choice(tokens)  
-    url = f"https://api.yay.space/v2/groups/{group_id}/members"
+    url = f"https://api.yay.space/v2/groups/{group_id}/members?number=500"
     headers = {"Authorization": f"Bearer {token}"}
     async with session.get(url, headers=headers) as response:
         assert response.status == 200
